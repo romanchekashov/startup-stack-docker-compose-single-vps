@@ -1,5 +1,9 @@
 version: "3.3"
 
+networks:
+  startup-stack-network:
+    driver: bridge
+
 services:
   nginx:
     container_name: nginx
@@ -10,7 +14,35 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    networks:
+      - startup-stack-network
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt
       - ./nginx/public:/usr/share/nginx/html
       - ./nginx/sites-available:/home/sites-available
+
+  backup:
+    platform: linux/amd64 #Required for Mac M1 PRO
+    container_name: backup
+    build:
+      context: .
+      dockerfile: backup/backup.Dockerfile
+      args:
+        - PORT=3000
+    ports:
+      - "3000:3000"
+    environment:
+      - FIREBASE_PRIVATE_KEY_FILE=${FIREBASE_PRIVATE_KEY_FILE:-/home/private/firebase-private-key.json}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID:-startup-stack}
+      - FIREBASE_STORAGE_BUCKET=${FIREBASE_STORAGE_BUCKET:-gs://startup-stack.appspot.com}
+      - FIREBASE_UPLOAD_BACKUPS_LIMIT=${FIREBASE_UPLOAD_BACKUPS_LIMIT:-2} # number of backups to upload to firebase storage
+      - POSTGRES_PORT_USER_PASSWORD_DBNAME_CONTAINER_1=${POSTGRES_PORT_USER_PASSWORD_DBNAME_CONTAINER_1}  # you can add multiple databases, just add _1, _2, _3, etc.
+      #- POSTGRES_PORT_USER_PASSWORD_DBNAME_CONTAINER_2=${POSTGRES_PORT},${POSTGRES_USER},${POSTGRES_PASSWORD},${POSTGRES_DB_NAME}
+      - CRON_BACKUP_SCHEDULE=${CRON_BACKUP_SCHEDULE:-0 4 * * *}  # every day at 4am
+      - LOCAL_BACKUPS_LIMIT=${LOCAL_BACKUPS_LIMIT:-2} # number of backups to keep per database
+    networks:
+      - startup-stack-network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./backup/backups:/home/backups
+      - ./backup/private:/home/private
