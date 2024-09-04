@@ -1,0 +1,14 @@
+.git
+.cache
+
+**/*.class
+
+*.md
+
+/backups*
+/build*
+/logs*
+
+secret.properties
+test.secret.properties
+.env*.local
