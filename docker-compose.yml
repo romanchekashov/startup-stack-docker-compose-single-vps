@@ -32,7 +32,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - FIREBASE_PRIVATE_KEY_FILE=${FIREBASE_PRIVATE_KEY_FILE:-/home/private/firebase-private-key.json}
+      - FIREBASE_PRIVATE_KEY_FILE=${FIREBASE_PRIVATE_KEY_FILE:-firebase-private-key.json}
       - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID:-startup-stack}
       - FIREBASE_STORAGE_BUCKET=${FIREBASE_STORAGE_BUCKET:-gs://startup-stack.appspot.com}
       - FIREBASE_UPLOAD_BACKUPS_LIMIT=${FIREBASE_UPLOAD_BACKUPS_LIMIT:-2} # number of backups to upload to firebase storage
