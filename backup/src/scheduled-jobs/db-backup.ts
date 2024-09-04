@@ -91,8 +91,8 @@ async function createBackup(bp: Backup) {
 function parseConfigPostgres(): Backup[] {
   let i = 1;
     const backups: Backup[] = [];
-    while (process.env[`POSTGRES_PORT_USER_PASSWORD_DBNAME_CONTAINER_${i}`]) {
-      const [port, user, password, dbName, dbContainer] = process.env[`POSTGRES_PORT_USER_PASSWORD_DBNAME_CONTAINER_${i}`]!.split(',');
+    while (process.env[`POSTGRES_PORT_USER_DBNAME_CONTAINER_${i}`]) {
+      const [port, user, dbName, dbContainer] = process.env[`POSTGRES_PORT_USER_DBNAME_CONTAINER_${i}`]!.split(',');
       backups.push({
         backupDir: `./backups/${dbName}`,
         dbName,
