@@ -13,5 +13,6 @@ For quick start-up of your project on a single VPS with Docker Compose.
 #### Should be uncommented in `docker-compose.yml`:
 - PostgreSQL - Main database
 - Redis - Cache
+- MongoDB - NoSQL Document database
 
 > Note: You can add more services to [docker-compose.yml](./docker-compose.yml) and configure them in `.env.local` file.
