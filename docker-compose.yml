@@ -1,11 +1,15 @@
 version: "3.3"
 
+volumes:
+  db_postgres_vol:
+
 networks:
   startup-stack-network:
     driver: bridge
 
 services:
   nginx:
+    platform: linux/amd64 #Required for Mac M1 PRO
     container_name: nginx
     build:
       context: .
@@ -46,3 +50,52 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./backup/backups:/home/backups
       - ./backup/private:/home/private
+
+#  db_postgres:
+#    container_name: db_postgres
+#    image: postgres:16.1
+#    shm_size: 2g
+#    restart: always
+#    environment:
+#      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+#      - POSTGRES_USER=${POSTGRES_USER}
+#      - POSTGRES_DB=example_db
+#    command:
+#      - "postgres"
+#      - "-c"
+#      - "wal_level=logical"              # required for logical replication and CDC Debezium
+#      - "-c"
+#      - "max_prepared_transactions=100"  # required for 2-phase commit (2PC) transactions
+#      # configs below taken from https://pgtune.leopard.in.ua/#/ for: 2GB RAM, SSD
+#      - "-c"
+#      - "max_connections=300"
+#      - "-c"
+#      - "shared_buffers=512MB"
+#      - "-c"
+#      - "effective_cache_size=1536MB"
+#      - "-c"
+#      - "maintenance_work_mem=128MB"
+#      - "-c"
+#      - "checkpoint_completion_target=0.9"
+#      - "-c"
+#      - "wal_buffers=16MB"
+#      - "-c"
+#      - "default_statistics_target=100"
+#      - "-c"
+#      - "random_page_cost=1.1"
+#      - "-c"
+#      - "effective_io_concurrency=200"
+#      - "-c"
+#      - "work_mem=873kB"
+#      - "-c"
+#      - "huge_pages=off"
+#      - "-c"
+#      - "min_wal_size=2GB"
+#      - "-c"
+#      - "max_wal_size=8GB"
+#    volumes:
+#      - db_postgres_vol:/var/lib/postgresql/data
+#    ports:
+#      - ${POSTGRES_PORT:-5432}:5432
+#    networks:
+#      - startup-stack-network
