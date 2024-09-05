@@ -2,6 +2,7 @@ version: "3.3"
 
 volumes:
   db_postgres_vol:
+  cache_redis_vol:
 
 networks:
   startup-stack-network:
@@ -99,3 +100,12 @@ services:
 #      - ${POSTGRES_PORT:-5432}:5432
 #    networks:
 #      - startup-stack-network
+
+#  cache_redis:
+#    image: redis:7.4.0
+#    restart: always
+#    ports:
+#      - ${REDIS_PORT}:${REDIS_PORT}
+#    command: redis-server --maxmemory-policy allkeys-lfu --maxmemory 256M --save 3600 1 --loglevel warning --requirepass ${REDIS_PASSWORD}
+#    volumes:
+#      - cache_redis_vol:/data
