@@ -45,7 +45,7 @@ services:
     image: logstash:7.17.25
     container_name: logstash # Sets the name of the container to "logstash."
     volumes:
-      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
+#      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
       - ./logstash/pipeline/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
 #      - /logs/sample.log:/usr/share/logstash/data/sample.log # add your log file path to here
       - ./logs:/usr/share/logstash/logs
