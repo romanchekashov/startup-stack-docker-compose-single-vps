@@ -1,0 +1,61 @@
+version: '3.7'
+
+networks:
+  elk:
+    driver: bridge
+
+volumes:
+  es-data:
+    driver: local
+
+services:
+  elasticsearch: # configures the Elasticsearch container.
+    image: elasticsearch:7.17.25
+    container_name: elasticsearch # Sets the name of the container to "elasticsearch."
+    environment: # Configures environment variables for the Elasticsearch container, such as node name, discovery type, memory lock, and Java options for heap size.
+      - node.name=elasticsearch
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+#      - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - elk
+
+  kibana: # Configures the Kibana container.
+    image: kibana:7.17.25
+    container_name: kibana # Sets the name of the container to "kibana."
+    ports:
+      - 5601:5601
+    environment: # Sets the Elasticsearch URL and Node.js options for the Kibana container.
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+#      - 'NODE_OPTIONS=--max-old-space-size=2048'
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch
+
+  logstash: #c onfigures the Logstash container.
+    image: logstash:7.17.25
+    container_name: logstash # Sets the name of the container to "logstash."
+    volumes:
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ./logstash/pipeline/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+#      - /logs/sample.log:/usr/share/logstash/data/sample.log # add your log file path to here
+      - ./logs:/usr/share/logstash/logs
+    ports:
+      - 5000:5000
+    environment:
+      - XPACK_MONITORING_ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - XPACK_MONITORING_ENABLED=true
+#      - 'LS_JAVA_OPTS=-Xmx256m -Xms256m' # Sets the Java options for Logstash heap size.
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch
