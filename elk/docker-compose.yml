@@ -16,7 +16,7 @@ services:
       - node.name=elasticsearch
       - discovery.type=single-node
       - bootstrap.memory_lock=true
-#      - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
+      - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
     ulimits:
       memlock:
         soft: -1
@@ -35,7 +35,7 @@ services:
       - 5601:5601
     environment: # Sets the Elasticsearch URL and Node.js options for the Kibana container.
       - ELASTICSEARCH_URL=http://elasticsearch:9200
-#      - 'NODE_OPTIONS=--max-old-space-size=2048'
+      - 'NODE_OPTIONS=--max-old-space-size=2048'
     networks:
       - elk
     depends_on:
@@ -54,7 +54,7 @@ services:
     environment:
       - XPACK_MONITORING_ELASTICSEARCH_HOSTS=http://elasticsearch:9200
       - XPACK_MONITORING_ENABLED=true
-#      - 'LS_JAVA_OPTS=-Xmx256m -Xms256m' # Sets the Java options for Logstash heap size.
+      - 'LS_JAVA_OPTS=-Xmx1024m -Xms1024m' # Sets the Java options for Logstash heap size.
     networks:
       - elk
     depends_on:
