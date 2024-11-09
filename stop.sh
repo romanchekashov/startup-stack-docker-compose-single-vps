@@ -4,7 +4,7 @@ echo "Startup Stack stopping..."
 
 git pull
 
-docker-compose down  # stop Dockers
+docker compose down  # stop Dockers
 
 docker ps -a
 
