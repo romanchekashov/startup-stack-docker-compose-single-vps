@@ -42,11 +42,18 @@ const backups: Backup[] = parseConfigPostgres();
 console.log('Backups:', backups);
 let isCronRunning = false;
 
-cron.schedule(cronSchedule, async () => {
-    if (isCronRunning) {
-      console.log('Cron is already running...');
-      return;
-    }
+cron.schedule(cronSchedule, doBackups);
+
+// (async () => {
+//   console.log('Initial backup...');
+//   await doBackups();
+// })();
+
+async function doBackups() {
+  if (isCronRunning) {
+    console.log('Cron is already running...');
+    return;
+  }
 
   try {
     isCronRunning = true;
@@ -60,12 +67,7 @@ cron.schedule(cronSchedule, async () => {
   } finally {
     isCronRunning = false;
   }
-});
-
-(async () => {
-  console.log('Initial backup...');
-  await createBackup(backups[0]);
-})();
+}
 
 async function createBackup(bp: Backup) {
   const {backupDir, dbName} = bp;
