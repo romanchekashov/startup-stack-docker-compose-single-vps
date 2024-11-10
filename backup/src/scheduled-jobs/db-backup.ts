@@ -39,6 +39,7 @@ interface Backup {
 }
 
 const backups: Backup[] = parseConfigPostgres();
+console.log('Backups:', backups);
 let isCronRunning = false;
 
 cron.schedule(cronSchedule, async () => {
@@ -48,7 +49,7 @@ cron.schedule(cronSchedule, async () => {
     }
 
   try {
-      isCronRunning = true;
+    isCronRunning = true;
 
     for (const backup of backups) {
       shell.mkdir('-p', backup.backupDir);
