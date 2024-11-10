@@ -62,6 +62,11 @@ cron.schedule(cronSchedule, async () => {
   }
 });
 
+(async () => {
+  console.log('Initial backup...');
+  await createBackup(backups[0]);
+})();
+
 async function createBackup(bp: Backup) {
   const {backupDir, dbName} = bp;
   const backup = bp.backup();
