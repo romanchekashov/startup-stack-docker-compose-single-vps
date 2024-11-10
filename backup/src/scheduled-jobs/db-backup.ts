@@ -94,6 +94,7 @@ function parseConfigPostgres(): Backup[] {
     const backups: Backup[] = [];
     while (process.env[`POSTGRES_PORT_USER_DBNAME_CONTAINER_${i}`]) {
       const [port, user, dbName, dbContainer] = process.env[`POSTGRES_PORT_USER_DBNAME_CONTAINER_${i}`]!.split(',');
+      console.log(`Postgres backup config: ${port}, ${user}, ${dbName}, ${dbContainer}`);
       backups.push({
         backupDir: `./backups/${dbName}`,
         dbName,
