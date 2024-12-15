@@ -32,9 +32,9 @@ services:
       context: .
       dockerfile: backup/backup.Dockerfile
       args:
-        - PORT=3000
+        - PORT=${BACKUP_PORT:-3000}
     ports:
-      - "3000:3000"
+      - "${BACKUP_PORT:-3000}:${BACKUP_PORT:-3000}"
     environment:
       - FIREBASE_PRIVATE_KEY_FILE=${FIREBASE_PRIVATE_KEY_FILE:-firebase-private-key.json}
       - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID:-startup-stack}
