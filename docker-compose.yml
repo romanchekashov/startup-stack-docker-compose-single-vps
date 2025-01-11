@@ -42,6 +42,7 @@ services:
       - FIREBASE_UPLOAD_BACKUPS_LIMIT=${FIREBASE_UPLOAD_BACKUPS_LIMIT:-2} # number of backups to upload to firebase storage
       - POSTGRES_PORT_USER_DBNAME_CONTAINER_1=${POSTGRES_PORT_USER_DBNAME_CONTAINER_1}  # you can add multiple databases, just add _1, _2, _3, etc.
       - POSTGRES_PORT_USER_DBNAME_CONTAINER_2=${POSTGRES_PORT_USER_DBNAME_CONTAINER_2}  # you can add multiple databases, just add _1, _2, _3, etc.
+      - POSTGRES_PORT_USER_DBNAME_CONTAINER_3=${POSTGRES_PORT_USER_DBNAME_CONTAINER_3}  # you can add multiple databases, just add _1, _2, _3, etc.
       #- POSTGRES_PORT_USER_DBNAME_CONTAINER_2=${POSTGRES_PORT},${POSTGRES_USER},${POSTGRES_DB_NAME},${POSTGRES_DB_DOCKER_CONTAINER_NAME}
       - CRON_BACKUP_SCHEDULE=${CRON_BACKUP_SCHEDULE:-0 4 * * *}  # every day at 4am
       - LOCAL_BACKUPS_LIMIT=${LOCAL_BACKUPS_LIMIT:-2} # number of backups to keep per database
