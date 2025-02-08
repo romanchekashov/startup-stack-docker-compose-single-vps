@@ -96,11 +96,12 @@ async function createBackup(bp: Backup) {
 
     if (lastBackupFileSizeInKb > MAX_FILE_UPLOAD_SIZE_IN_KB) {
       const prefix = lastFileName.slice(0, -3) + '_';
-      if (shell.exec(`split -b 2048m ${lastBackupFilePath} ${prefix}`).code !== 0) {
+      const commandSplit = `split -b 2048m ${lastBackupFilePath} ${prefix}`;
+      log(commandSplit);
+      if (shell.exec(commandSplit).code !== 0) {
         log('Split backup error');
       } else {
         if (FIREBASE_UPLOAD_BACKUPS_LIMIT && lastBackupFileSizeInKb > 1) {
-          log('Uploading backup to Firebase...');
           await firebaseUploadBackups(backupDir, log,
             fs.readdirSync(backupDir).filter(f => f.includes(prefix)).map(f => `${backupDir}/${f}`)
           );
@@ -109,7 +110,6 @@ async function createBackup(bp: Backup) {
     } else {
       // Upload backup if only it contains smth.
       if (FIREBASE_UPLOAD_BACKUPS_LIMIT && lastBackupFileSizeInKb > 1) {
-        log('Uploading backup to Firebase...');
         await firebaseUploadBackups(backupDir, log, [lastBackupFilePath]);
       }
     }
@@ -148,6 +148,7 @@ function removeOldLocalBackups(backupDir: string, log = console.log) {
 }
 
 function firebaseUploadBackups(backupDir: string, log = console.log, lastBackupFilePath: string[]) {
+  log('Uploading backup to Firebase: ' + lastBackupFilePath);
   return FirebaseApp.getFiles()
       .then(files => files.filter(({name}) => !name.includes('images/')))
       .then(files => files.filter(({name}) => name.includes(backupDir.substring(2))))
