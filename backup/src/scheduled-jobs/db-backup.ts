@@ -160,10 +160,10 @@ function firebaseUploadBackups(backupDir: string, log = console.log, lastBackupF
             )
         );
       })
-      .then(() => lastBackupFilePath.forEach(filePath => {
-        return FirebaseApp.upload(filePath, filePath.substring(2)).then(downloadUrl => {
-          log(`Database backup [${filePath}] uploaded to Firebase: ${downloadUrl}`);
-        });
-      }))
+      .then(() => Promise.all(lastBackupFilePath
+          .map(filePath => FirebaseApp.upload(filePath, filePath.substring(2))
+              .then(downloadUrl => {
+        log(`Database backup [${filePath}] uploaded to Firebase: ${downloadUrl}`);
+      }))))
       .catch(log);
 }
