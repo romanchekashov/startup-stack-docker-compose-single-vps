@@ -29,8 +29,8 @@ const cronSchedule = process.env.CRON_BACKUP_SCHEDULE ?? CRON_EVERYDAY_AT_4_00;
 const FIREBASE_UPLOAD_BACKUPS_LIMIT = +(process.env.FIREBASE_UPLOAD_BACKUPS_LIMIT ?? 0);
 const LOCAL_BACKUPS_LIMIT = +(process.env.LOCAL_BACKUPS_LIMIT ?? 2);
 const DB_DUMP_TIMESTAMP_END = '_dump_`date +%Y-%m-%d"_"%H-%M-%S`.gz';
-const MAX_FILE_UPLOAD_SIZE_IN_MB = 2048;
-const MAX_FILE_UPLOAD_SIZE_IN_KB = 2097152;
+const MAX_FILE_UPLOAD_SIZE_IN_MB = 2048 / 2;
+const MAX_FILE_UPLOAD_SIZE_IN_KB = 2097152 / 2;
 
 interface Backup {
   backupDir: string;
@@ -94,7 +94,7 @@ async function createBackup(bp: Backup) {
 
     if (lastBackupFileSizeInKb > MAX_FILE_UPLOAD_SIZE_IN_KB) {
       const prefix = lastFileName.slice(0, -3) + '_';
-      if (shell.exec(`split -b 2G ${lastBackupFilePath} ${prefix}`).code !== 0) {
+      if (shell.exec(`split -b 1G ${lastBackupFilePath} ${prefix}`).code !== 0) {
         log('Split backup error');
       } else {
         if (FIREBASE_UPLOAD_BACKUPS_LIMIT && lastBackupFileSizeInKb > 1) {
