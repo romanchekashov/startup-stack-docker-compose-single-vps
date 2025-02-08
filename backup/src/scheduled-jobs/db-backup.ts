@@ -29,6 +29,8 @@ const cronSchedule = process.env.CRON_BACKUP_SCHEDULE ?? CRON_EVERYDAY_AT_4_00;
 const FIREBASE_UPLOAD_BACKUPS_LIMIT = +(process.env.FIREBASE_UPLOAD_BACKUPS_LIMIT ?? 0);
 const LOCAL_BACKUPS_LIMIT = +(process.env.LOCAL_BACKUPS_LIMIT ?? 2);
 const DB_DUMP_TIMESTAMP_END = '_dump_`date +%Y-%m-%d"_"%H-%M-%S`.gz';
+const MAX_FILE_UPLOAD_SIZE_IN_MB = 2048;
+const MAX_FILE_UPLOAD_SIZE_IN_KB = 2097152;
 
 interface Backup {
   backupDir: string;
@@ -69,6 +71,7 @@ async function doBackups() {
   }
 }
 
+// TODO Divide backup to chunks less then 2GB to Firebase storage upload + need script to restore DB from chunks!
 async function createBackup(bp: Backup) {
   const {backupDir, dbName} = bp;
   const backup = bp.backup();
@@ -82,16 +85,31 @@ async function createBackup(bp: Backup) {
     log('Database backup error');
   } else {
     const files: string[] = fs.readdirSync(backupDir);
-    const lastBackupFilePath = `${backupDir}/${files[files.length - 1]}`;
+    const lastFileName = files[files.length - 1];
+    const lastBackupFilePath = `${backupDir}/${lastFileName}`;
     const fileBuffer = fs.readFileSync(lastBackupFilePath);
     const lastBackupFileSizeInKb = round(Buffer.byteLength(fileBuffer) / 1024, 2);
 
     log(`Database backup complete: ${lastBackupFilePath}, ${lastBackupFileSizeInKb} KB`);
 
-    // Upload backup if only it contains smth.
-    if (FIREBASE_UPLOAD_BACKUPS_LIMIT && lastBackupFileSizeInKb > 1) {
-      log('Uploading backup to Firebase...');
-      await firebaseUploadBackups(backupDir, log, lastBackupFilePath);
+    if (lastBackupFileSizeInKb > MAX_FILE_UPLOAD_SIZE_IN_KB) {
+      const prefix = lastFileName.slice(0, -3) + '_';
+      if (shell.exec(`split -b 2G ${lastBackupFilePath} ${prefix}`).code !== 0) {
+        log('Split backup error');
+      } else {
+        if (FIREBASE_UPLOAD_BACKUPS_LIMIT && lastBackupFileSizeInKb > 1) {
+          log('Uploading backup to Firebase...');
+          await firebaseUploadBackups(backupDir, log, 
+            fs.readdirSync(backupDir).filter(f => f.includes(prefix)).map(f => `${backupDir}/${f}`)
+          );
+        }
+      }
+    } else {
+      // Upload backup if only it contains smth.
+      if (FIREBASE_UPLOAD_BACKUPS_LIMIT && lastBackupFileSizeInKb > 1) {
+        log('Uploading backup to Firebase...');
+        await firebaseUploadBackups(backupDir, log, [lastBackupFilePath]);
+      }
     }
   }
 }
@@ -127,13 +145,14 @@ function removeOldLocalBackups(backupDir: string) {
   });
 }
 
-function firebaseUploadBackups(backupDir: string, log = console.log, lastBackupFilePath: string) {
+function firebaseUploadBackups(backupDir: string, log = console.log, lastBackupFilePath: string[]) {
   return FirebaseApp.getFiles()
       .then(files => files.filter(({name}) => !name.includes('images/')))
       .then(files => files.filter(({name}) => name.includes(backupDir.substring(2))))
       .then(files => {
         return Promise.all(
-            outOfLimit(files, FIREBASE_UPLOAD_BACKUPS_LIMIT).map(file =>
+            // outOfLimit(files, FIREBASE_UPLOAD_BACKUPS_LIMIT)
+            files.map(file =>
                 FirebaseApp.deleteFile(file.name).then(r => {
                   log(`Backup ${file.name} was deleted from Firebase. - ${r}`);
                   return file.name;
@@ -141,9 +160,10 @@ function firebaseUploadBackups(backupDir: string, log = console.log, lastBackupF
             )
         );
       })
-      .then(() => FirebaseApp.upload(lastBackupFilePath, lastBackupFilePath.substring(2)))
-      .then(downloadUrl => {
-        log(`Database backup [${lastBackupFilePath}] uploaded to Firebase: ${downloadUrl}`);
-      })
+      .then(() => lastBackupFilePath.forEach(filePath => {
+        FirebaseApp.upload(filePath, filePath.substring(2)).then(downloadUrl => {
+          log(`Database backup [${lastBackupFilePath}] uploaded to Firebase: ${downloadUrl}`);
+        });
+      }))
       .catch(log);
 }
