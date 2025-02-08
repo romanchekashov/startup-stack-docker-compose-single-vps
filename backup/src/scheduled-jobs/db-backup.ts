@@ -81,9 +81,9 @@ async function createBackup(bp: Backup) {
 
   removeOldLocalBackups(backupDir, log);
 
-  if (shell.exec(backup).code !== 0) {
-    log('Database backup error');
-  } else {
+  // if (shell.exec(backup).code !== 0) {
+  //   log('Database backup error');
+  // } else {
     const files: string[] = fs.readdirSync(backupDir);
     const lastFileName = files[files.length - 1];
     const lastBackupFilePath = `${backupDir}/${lastFileName}`;
@@ -96,7 +96,7 @@ async function createBackup(bp: Backup) {
 
     if (lastBackupFileSizeInKb > MAX_FILE_UPLOAD_SIZE_IN_KB) {
       const prefix = lastFileName.slice(0, -3) + '_';
-      if (shell.exec(`split -b 2G ${lastBackupFilePath} ${prefix}`).code !== 0) {
+      if (shell.exec(`split -b 2048m ${lastBackupFilePath} ${prefix}`).code !== 0) {
         log('Split backup error');
       } else {
         if (FIREBASE_UPLOAD_BACKUPS_LIMIT && lastBackupFileSizeInKb > 1) {
@@ -113,7 +113,7 @@ async function createBackup(bp: Backup) {
         await firebaseUploadBackups(backupDir, log, [lastBackupFilePath]);
       }
     }
-  }
+  // }
 }
 
 function parseConfigPostgres(): Backup[] {
