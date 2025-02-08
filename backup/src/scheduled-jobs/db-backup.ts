@@ -99,7 +99,7 @@ async function createBackup(bp: Backup) {
       } else {
         if (FIREBASE_UPLOAD_BACKUPS_LIMIT && lastBackupFileSizeInKb > 1) {
           log('Uploading backup to Firebase...');
-          await firebaseUploadBackups(backupDir, log, 
+          await firebaseUploadBackups(backupDir, log,
             fs.readdirSync(backupDir).filter(f => f.includes(prefix)).map(f => `${backupDir}/${f}`)
           );
         }
@@ -161,8 +161,8 @@ function firebaseUploadBackups(backupDir: string, log = console.log, lastBackupF
         );
       })
       .then(() => lastBackupFilePath.forEach(filePath => {
-        FirebaseApp.upload(filePath, filePath.substring(2)).then(downloadUrl => {
-          log(`Database backup [${lastBackupFilePath}] uploaded to Firebase: ${downloadUrl}`);
+        return FirebaseApp.upload(filePath, filePath.substring(2)).then(downloadUrl => {
+          log(`Database backup [${filePath}] uploaded to Firebase: ${downloadUrl}`);
         });
       }))
       .catch(log);

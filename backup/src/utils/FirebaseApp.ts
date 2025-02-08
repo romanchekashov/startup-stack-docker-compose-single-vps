@@ -54,6 +54,15 @@ const deleteFile = (fileName: string): Promise<number> =>
     .delete()
     .then(r => r[0].statusCode);
 
-const FirebaseApp = {init, upload, getFiles, deleteFile};
+const downloadFile = async (filePath: string, destination: string) => {
+  try {
+    await storage.bucket().file(filePath).download({ destination });
+    console.log(`✅ File downloaded to ${destination}`);
+  } catch (error) {
+    console.error("❌ Error downloading file:", error);
+  }
+}
+
+const FirebaseApp = {init, upload, getFiles, deleteFile, downloadFile};
 
 export default FirebaseApp;
