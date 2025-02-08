@@ -79,7 +79,7 @@ async function createBackup(bp: Backup) {
 
   log('\nDatabase backup start');
 
-  removeOldLocalBackups(backupDir);
+  removeOldLocalBackups(backupDir, log);
 
   if (shell.exec(backup).code !== 0) {
     log('Database backup error');
@@ -87,8 +87,10 @@ async function createBackup(bp: Backup) {
     const files: string[] = fs.readdirSync(backupDir);
     const lastFileName = files[files.length - 1];
     const lastBackupFilePath = `${backupDir}/${lastFileName}`;
-    const fileBuffer = fs.readFileSync(lastBackupFilePath);
-    const lastBackupFileSizeInKb = round(Buffer.byteLength(fileBuffer) / 1024, 2);
+    log(`📂 Files in "${backupDir}":\n`);
+
+    const stats = fs.statSync(lastBackupFilePath);
+    const lastBackupFileSizeInKb = stats.size / 1024; // Convert bytes to KB
 
     log(`Database backup complete: ${lastBackupFilePath}, ${lastBackupFileSizeInKb} KB`);
 
@@ -133,14 +135,14 @@ function parseConfigPostgres(): Backup[] {
     return backups;
 }
 
-function removeOldLocalBackups(backupDir: string) {
+function removeOldLocalBackups(backupDir: string, log = console.log) {
   const files: string[] = fs.readdirSync(backupDir);
   outOfLimit(files, LOCAL_BACKUPS_LIMIT).forEach(file => {
     try {
       fs.unlinkSync(`${backupDir}/${file}`);
-      console.log(`File removed: ${backupDir}/${file}`);
+      log(`File removed: ${backupDir}/${file}`);
     } catch (err) {
-      console.error(err);
+      log(err);
     }
   });
 }
