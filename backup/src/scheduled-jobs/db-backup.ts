@@ -87,7 +87,7 @@ async function createBackup(bp: Backup) {
     const files: string[] = fs.readdirSync(backupDir);
     const lastFileName = files[files.length - 1];
     const lastBackupFilePath = `${backupDir}/${lastFileName}`;
-    log(`📂 Files in "${backupDir}":\n`);
+    log(`📂 Files in "${backupDir}":`);
 
     const stats = fs.statSync(lastBackupFilePath);
     const lastBackupFileSizeInKb = stats.size / 1024; // Convert bytes to KB
