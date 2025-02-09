@@ -19,29 +19,24 @@ function firebaseDownloadBackups(log = console.log) {
     return FirebaseApp.getFiles()
         .then(files => files.filter(({name}) => !name.includes('images/')))
         .then(files => files.filter(({name}) => name.includes(include)))
-        .then(files => {
-            files.forEach(f => log(f));
-            // FirebaseApp.downloadFile(f.name)
-        //   return Promise.all(
-        //       // outOfLimit(files, FIREBASE_UPLOAD_BACKUPS_LIMIT)
-        //       files.map(file =>
-        //           FirebaseApp.deleteFile(file.name).then(r => {
-        //             log(`Backup ${file.name} was deleted from Firebase. - ${r}`);
-        //             return file.name;
-        //           })
-        //       )
-        //   );
-        })
+        .then(files => Promise.all(files.map(f => FirebaseApp.downloadFile(f.name, './' + f.name)))
+            .then(() => './' + files[0].name.slice(0, -3)))
         .catch(log);
 }
 
 (async () => {
-    await firebaseDownloadBackups();
-    // const commandConcat = `cat trader-dev_dump_2025-02-08_18_01_26_* > trader-dev_dump_2025-02-08_04-00-31__.gz`;
-    // console.log(commandConcat);
-    // if (shell.exec(commandConcat).code !== 0) {
-    //     console.log('Split backup error');
-    // } else {}
+    const backupPrefix = await firebaseDownloadBackups();
+    // const backupPrefix = './backups/trader-dev/trader-dev_dump_2025-02-08_23-55-07_ab'.slice(0, -3);
+    const commandConcat = `cat ${backupPrefix}_* > ${backupPrefix}.gz`;
+    console.log(commandConcat);
+    if (shell.exec(commandConcat).code !== 0) {
+        console.log('cat backup chunks error');
+    } else {
+        const commandRemoveChunks = `rm ${backupPrefix}_*`;
+        console.log(commandRemoveChunks);
+        if (shell.exec(commandRemoveChunks).code !== 0) {
+            console.log('rm backup chunks error');
+        } else {}
+    }
+    console.log('Backup downloaded!');
 })();
-
-console.log('Backup downloaded!');
