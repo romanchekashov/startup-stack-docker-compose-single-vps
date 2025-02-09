@@ -107,14 +107,12 @@ async function createBackup(bp: Backup) {
               .filter(f => f.includes(prefix))
               .map(f => `${backupDir}/${f}`);
           await firebaseUploadBackups(backupDir, log, backupChunks);
-          backupChunks.forEach(filePath => {
-            try {
-              fs.unlinkSync(filePath);
-              log(`File removed: ${filePath}`);
-            } catch (err) {
-              log(err);
-            }
-          });
+
+          const commandRemoveChunks = `rm ${prefixFilePath}*`;
+          console.log(commandRemoveChunks);
+          if (shell.exec(commandRemoveChunks).code !== 0) {
+            console.log('rm backup chunks error');
+          } else {}
         }
       }
     } else {
