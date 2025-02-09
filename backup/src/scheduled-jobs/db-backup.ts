@@ -81,9 +81,9 @@ async function createBackup(bp: Backup) {
 
   removeOldLocalBackups(backupDir, log);
 
-  if (shell.exec(backup).code !== 0) {
-    log('Database backup error');
-  } else {
+  // if (shell.exec(backup).code !== 0) {
+  //   log('Database backup error');
+  // } else {
     const files: string[] = fs.readdirSync(backupDir);
     const lastFileName = files[files.length - 1];
     const lastBackupFilePath = `${backupDir}/${lastFileName}`;
@@ -123,7 +123,7 @@ async function createBackup(bp: Backup) {
         await firebaseUploadBackups(backupDir, log, [lastBackupFilePath]);
       }
     }
-  }
+  // }
 }
 
 function parseConfigPostgres(): Backup[] {
