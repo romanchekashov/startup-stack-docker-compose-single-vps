@@ -1,3 +1,4 @@
+import * as shell from 'shelljs';
 import FirebaseApp from "./utils/FirebaseApp";
 
 require('dotenv').config({path: '../.env.local'});
@@ -19,7 +20,8 @@ function firebaseDownloadBackups(log = console.log) {
         .then(files => files.filter(({name}) => !name.includes('images/')))
         .then(files => files.filter(({name}) => name.includes(include)))
         .then(files => {
-            files.forEach(f => log(f.name));
+            files.forEach(f => log(f));
+            // FirebaseApp.downloadFile(f.name)
         //   return Promise.all(
         //       // outOfLimit(files, FIREBASE_UPLOAD_BACKUPS_LIMIT)
         //       files.map(file =>
@@ -35,6 +37,11 @@ function firebaseDownloadBackups(log = console.log) {
 
 (async () => {
     await firebaseDownloadBackups();
+    // const commandConcat = `cat trader-dev_dump_2025-02-08_18_01_26_* > trader-dev_dump_2025-02-08_04-00-31__.gz`;
+    // console.log(commandConcat);
+    // if (shell.exec(commandConcat).code !== 0) {
+    //     console.log('Split backup error');
+    // } else {}
 })();
 
 console.log('Backup downloaded!');
