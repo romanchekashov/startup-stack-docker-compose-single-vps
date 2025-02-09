@@ -97,7 +97,7 @@ async function createBackup(bp: Backup) {
     if (lastBackupFileSizeInKb > MAX_FILE_UPLOAD_SIZE_IN_KB) {
       const prefix = lastFileName.slice(0, -3) + '_';
       const prefixFilePath = lastBackupFilePath.slice(0, -3) + '_';
-      const commandSplit = `split -b 2048m ../.${lastBackupFilePath} ../.${prefixFilePath}`;
+      const commandSplit = `split -b 2048m ${lastBackupFilePath} ${prefixFilePath}`;
       log(commandSplit);
       if (shell.exec(commandSplit).code !== 0) {
         log('Split backup error');
