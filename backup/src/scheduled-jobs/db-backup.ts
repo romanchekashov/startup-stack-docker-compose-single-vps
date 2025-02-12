@@ -145,7 +145,7 @@ function parseConfigPostgres(): Backup[] {
 
 function removeOldLocalBackups(backupDir: string, log = console.log) {
   const files: string[] = fs.readdirSync(backupDir);
-  outOfLimit(files, LOCAL_BACKUPS_LIMIT).forEach(file => {
+  outOfLimit(files.filter(v => v.includes('.gz')), LOCAL_BACKUPS_LIMIT).forEach(file => {
     try {
       fs.unlinkSync(`${backupDir}/${file}`);
       log(`File removed: ${backupDir}/${file}`);
