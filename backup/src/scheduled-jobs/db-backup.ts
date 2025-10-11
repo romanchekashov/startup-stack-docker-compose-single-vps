@@ -12,6 +12,7 @@ import {outOfLimit, round} from '../utils/utils';
  *
  * Backup:
  * docker exec [DOCKER_CONTAINER_NAME] pg_dump -p [POSTGRES_PORT] -U [POSTGRES_USER] -Fc [DB_NAME] > [DB_NAME]_dump_`date +%Y-%m-%d"_"%H_%M_%S`.gz
+ * docker exec [DOCKER_CONTAINER_NAME] pg_dump -p [POSTGRES_PORT] -U [POSTGRES_USER] -Fc [DB_NAME] > [DB_NAME]_dump_$(date +%Y-%m-%d_%H_%M_%S).gz
  *
  * Restore:
  * docker cp [DB_NAME]_dump_31-10-2021_19_07_30.gz fd16ae8b3bd7:/home
