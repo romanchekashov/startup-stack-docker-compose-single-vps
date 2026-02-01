@@ -22,3 +22,11 @@ docker compose --env-file .env.local down          # to stop your project
 - MongoDB - NoSQL Document database
 
 > Note: You can add more services to [docker-compose.yml](./docker-compose.yml) and configure them in `.env.local` file.
+
+#### MinIO
+- MinIO - Object Storage
+- Uncomment services you need in [docker-compose.minio.yml](./docker-compose.minio.yml) and configure them in `.env.local` file which can be created from [.env.example](./.env.example).
+```sh
+docker compose -f docker-compose.minio.yml --env-file .env.local up -d  # Start MinIO
+docker compose -f docker-compose.minio.yml --env-file .env.local down   # to stop your project
+```
