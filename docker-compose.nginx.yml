@@ -1,0 +1,21 @@
+networks:
+  startup-stack-network:
+    driver: bridge
+
+services:
+  nginx:
+    platform: linux/amd64 #Required for Mac M1 PRO
+    container_name: nginx
+    build:
+      context: .
+      dockerfile: nginx/nginx.Dockerfile
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - startup-stack-network
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+      - ./nginx/public:/usr/share/nginx/html
+      - ./nginx/sites-available:/home/sites-available
