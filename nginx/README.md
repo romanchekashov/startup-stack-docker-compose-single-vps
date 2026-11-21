@@ -84,6 +84,37 @@ server {
 }
 ```
 
+### Enable gzip for JS / CSS / JSON
+`nginx.conf` has `gzip on;`, but nginx's default `gzip_types` is **`text/html` only** — JS bundles, CSS and JSON API
+responses are sent uncompressed. On a slow link this is very visible: a 1.4 MB React bundle took ~26 s to load,
+with gzip it is ~400 KB and ~1 s. Add to the `server { listen 443 ... }` block of your site:
+```shell
+# sites-available/example_ssl.conf
+server {
+  # ...
+  gzip            on;
+  gzip_comp_level 5;
+  gzip_min_length 1024;
+  gzip_proxied    any;   # also compress responses proxied from your backend
+  gzip_vary       on;
+  gzip_types      text/css text/plain text/javascript application/javascript application/json image/svg+xml;
+  # ...
+}
+```
+If the backend uses **SockJS** (e.g. Spring STOMP on `/ws`), turn gzip off for that path: SockJS fallback transports
+stream data as `application/javascript`, and gzip would buffer the stream. See
+[example_ssl.conf](./examples-nginx-configs/example_ssl.conf).
+
+Check:
+```shell
+curl -s -o /dev/null -H "Accept-Encoding: gzip" -w "%{size_download} bytes, %header{content-encoding}\n" https://example.com/assets/index.js
+```
+
+Apply without downtime (site configs in `/sites-available` are mounted into the container):
+```shell
+docker exec nginx nginx -t && docker exec nginx nginx -s reload
+```
+
 ### Restart Nginx (docker compose) with script:
 ```shell
 ./restart.sh
