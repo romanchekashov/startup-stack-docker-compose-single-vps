@@ -115,6 +115,34 @@ Apply without downtime (site configs in `/sites-available` are mounted into the 
 docker exec nginx nginx -t && docker exec nginx nginx -s reload
 ```
 
+### Cache hashed build assets (`/assets/`)
+Vite (`/assets/index-AbC123.js`) and CRA (`/static/`) put a content hash into every asset file name, so a file never
+changes under the same name and can be cached by the browser for a year. `index.html` must stay **uncached** — it
+references the new file names after each deploy. Many backends send `Cache-Control: no-store` on every response
+(e.g. Spring Security), which makes the browser re-download the whole bundle on every page open.
+
+Backend behind a proxy — replace the backend's headers for `/assets/` only:
+```shell
+# sites-available/example_ssl.conf
+location /assets/ {
+  proxy_pass http://<YOUR VPS IP address>:3000;
+  proxy_http_version 1.1;
+  proxy_set_header Host $host;
+  proxy_hide_header Cache-Control;
+  proxy_hide_header Pragma;
+  proxy_hide_header Expires;
+  add_header Cache-Control "public, max-age=31536000, immutable";  # no `always`: 404s are not cached
+}
+```
+Static SPA served by Nginx itself — see [react_spa_ssl.conf](./examples-nginx-configs/react_spa_ssl.conf)
+(`/assets/` cached for a year, `index.html` with `no-cache`).
+
+Check:
+```shell
+curl -s -D - -o /dev/null https://example.com/assets/index.js | grep -i cache-control   # public, max-age=31536000, immutable
+curl -s -D - -o /dev/null https://example.com/              | grep -i cache-control   # no-cache / no-store
+```
+
 ### Restart Nginx (docker compose) with script:
 ```shell
 ./restart.sh
